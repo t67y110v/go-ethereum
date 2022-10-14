@@ -32,7 +32,7 @@
 
 ![image](https://user-images.githubusercontent.com/46971653/195937502-09c42ce5-08a6-497f-a656-f7eeca348c7c.png)
 
-- Вводим команду newWallet [password], и видим в списке появляется созданный кошелек, и предложение войти в систему
+- Вводим команду newWallet [password], и видим в списке появляется созданный кошелек, и предложение войти в систему. Команда создает папку wallet в которой хранятся файлы аккаунтов
 
 ![image](https://user-images.githubusercontent.com/46971653/195938309-d4d37e2c-c1b2-49f3-977d-4666ab3cc0ba.png)
 
