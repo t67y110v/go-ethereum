@@ -2,7 +2,6 @@ package cli
 
 import (
 	"io/ioutil"
-	"log"
 
 	pt "github.com/c-bata/go-prompt"
 )
@@ -10,6 +9,7 @@ import (
 func completer(d pt.Document) []pt.Suggest {
 
 	var s []pt.Suggest
+	var err error
 	switch d.Text {
 	case "n", "ne", "new":
 		s = []pt.Suggest{
@@ -24,7 +24,7 @@ func completer(d pt.Document) []pt.Suggest {
 	case "s", "si", "sign":
 		s = []pt.Suggest{
 			{
-				Text: "signIn", Description: "signin your wallet",
+				Text: "signIn", Description: "use your wallet and enter password",
 			},
 		}
 	case "r", "re", "rel", "relo":
@@ -35,23 +35,30 @@ func completer(d pt.Document) []pt.Suggest {
 		}
 	default:
 
-		s = genWalletList("./wallet")
+		s, err = genWalletList("./wallet")
+		if err != nil {
+			s = []pt.Suggest{
+				{
+					Text: "newWallet", Description: "There are no registered wallets in the system, create a wallet using the command newWallet",
+				},
+			}
+		}
 	}
 	return pt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 
 }
 
-func genWalletList(path string) []pt.Suggest {
+func genWalletList(path string) ([]pt.Suggest, error) {
 	var s []pt.Suggest
-	files, err := ioutil.ReadDir("./wallet")
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	for _, f := range files {
-		s = append(s, pt.Suggest{Text: f.Name(), Description: "Enter your password"})
+		s = append(s, pt.Suggest{Text: f.Name(), Description: "run signIn and enter your password"})
 		//fmt.Println(f.Name())
 	}
 
 	//fmt.Println(s)
-	return s
+	return s, nil
 }

@@ -3,6 +3,7 @@ package model
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/sha256"
 	"encoding/base64"
 )
 
@@ -31,7 +32,11 @@ type EthWallet struct {
 
 func (e *EthWallet) BeforeCreate() error {
 	if len(e.Password) > 0 {
-		enc, err := Encrypt(e.Password, secretKey)
+		bv := []byte(e.Password)
+		hasher := sha256.New()
+		hasher.Write(bv)
+		sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+		enc, err := Encrypt(sha, secretKey)
 		if err != nil {
 			return err
 		}
@@ -41,7 +46,11 @@ func (e *EthWallet) BeforeCreate() error {
 }
 
 func (e *EthWallet) ComparePassword(password string) bool {
-	p, err := Encrypt(password, secretKey)
+	bv := []byte(e.Password)
+	hasher := sha256.New()
+	hasher.Write(bv)
+	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	p, err := Encrypt(sha, secretKey)
 	if err != nil {
 		return false
 	}
@@ -51,13 +60,16 @@ func (e *EthWallet) ComparePassword(password string) bool {
 	return false
 }
 
-// Encrypt methWalletod is to encrypt or hide any classified text
 func Encrypt(text, secretKey string) (string, error) {
+	bv := []byte(text)
+	hasher := sha256.New()
+	hasher.Write(bv)
+	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 	block, err := aes.NewCipher([]byte(secretKey))
 	if err != nil {
 		return "", err
 	}
-	plainText := []byte(text)
+	plainText := []byte(sha)
 	cfb := cipher.NewCFBEncrypter(block, iv)
 	cipherText := make([]byte, len(plainText))
 	cfb.XORKeyStream(cipherText, plainText)
@@ -65,6 +77,7 @@ func Encrypt(text, secretKey string) (string, error) {
 }
 
 func Decrypt(text, secretKey string) (string, error) {
+
 	block, err := aes.NewCipher([]byte(secretKey))
 	if err != nil {
 		return "", err

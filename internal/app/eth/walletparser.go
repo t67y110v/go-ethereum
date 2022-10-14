@@ -1,6 +1,8 @@
 package eth
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"ethgo/internal/app/model"
 	"io/ioutil"
 	"log"
@@ -17,7 +19,12 @@ func ParseWallet(path, password string) *model.EthWallet {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ep, err := model.Encrypt(password, secretKey)
+	bv := []byte(password)
+	hasher := sha256.New()
+	hasher.Write(bv)
+	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+
+	ep, err := model.Encrypt(sha, secretKey)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,5 +41,6 @@ func ParseWallet(path, password string) *model.EthWallet {
 		PublicKey:    publicKey,
 		PublicAddres: publicAddres,
 	}
+
 	return ew
 }
